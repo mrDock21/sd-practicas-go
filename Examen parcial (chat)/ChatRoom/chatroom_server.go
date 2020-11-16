@@ -3,6 +3,7 @@ package ChatRoom
 import (
 	"encoding/gob"
 	"fmt"
+	"io/ioutil"
 	"net"
 )
 
@@ -16,11 +17,12 @@ const (
 	Connect
 	Disconnect
 	TextStream
+	PrepareFile
 	FileStream
 )
 
 func (m MsgType) String() string {
-	return [...]string{"Success", "Connect", "Disconnect", "TextStream", "FileStream"}[m]
+	return [...]string{"Success", "Connect", "Disconnect", "TextStream", "PrepareFile", "FileStream"}[m]
 }
 
 //	Data structure sent through network (Accessed by both client and server)
@@ -32,7 +34,8 @@ type Data struct {
 
 // Server side processing
 type Server struct {
-	clients []chatClient
+	clients     []chatClient
+	ChatHistory string
 }
 
 type chatClient struct {
@@ -102,15 +105,23 @@ func (s *Server) switchAction(data *Data, connection net.Conn) {
 	switch data.Cmd {
 	case Connect:
 		fmt.Printf("Appends {%s} to chat\n\n", data.From)
+		s.ChatHistory += fmt.Sprintf("{%s}: Connects!\n", data.From)
 		s.appendToChat(data, connection)
 	case Disconnect:
 		fmt.Printf("Removes {%s} from chat\n\n", data.From)
+		s.ChatHistory += fmt.Sprintf("{%s}: Left the chat!\n", data.From)
 		s.removeFromChat(data)
 	case TextStream:
 		fmt.Printf("Passes {%s}'s text stream\n\n", data.From)
+		s.ChatHistory += fmt.Sprintf("{%s}: %s\n", data.From, data.Message)
+		s.sendMessage(data)
+	case PrepareFile:
+		fmt.Printf("{%s} will send FILE=%s\n\n", data.From, data.Message)
+		s.ChatHistory += fmt.Sprintf("{%s}: SENT FILE {%s}\n", data.From, data.Message)
+		// pass file sending
 		s.sendMessage(data)
 	case FileStream:
-		fmt.Printf("Sends {%s}'s file\n\n", data.From)
+		fmt.Printf("Sends {%s}'s filestream\n\n", data.From)
 		s.sendMessage(data)
 	default: // success is ignored
 	}
@@ -170,6 +181,16 @@ func (s *Server) sendMessage(data *Data) {
 		if excludedUser != client.User.Name {
 			client.sendMessage(*data)
 		}
+	}
+}
+
+//	Saves all chat history to file
+func (s *Server) BackupChat() {
+	// Write chat history to file
+	err := ioutil.WriteFile("./ChatHistory.txt", []byte(s.ChatHistory), 0644)
+
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 

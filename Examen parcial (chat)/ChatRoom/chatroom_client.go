@@ -5,16 +5,21 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"time"
 )
 
 const (
-	DOWNLOAD_FILE_PATH = "./Download.txt"
+	DOWNLOAD_FILE_PATH = "./"
 )
 
 type Client struct {
 	Listener *net.Conn
 	Username string
 	Stop     *bool
+	// to shwo all messages
+	ChatHistory string
+	// used when someone sends a file
+	fileName string
 }
 
 func (c *Client) Connect(username string) bool {
@@ -62,14 +67,25 @@ func (c *Client) SendMessage(msg string) {
 		Message: msg,
 		From:    c.Username,
 	})
+	c.ChatHistory += fmt.Sprintf("You: {%s}\n", msg)
 }
 
-func (c *Client) SendFile(path string) {
+func (c *Client) SendFile(fileContents, fileName string) {
+	// send notification
 	c.sendMessage(&Data{
-		Cmd:     FileStream,
-		Message: path,
+		Cmd:     PrepareFile,
+		Message: fileName,
 		From:    c.Username,
 	})
+	// force the sleep to make sure name comes first
+	time.Sleep(time.Millisecond * 1000)
+	// send stream
+	c.sendMessage(&Data{
+		Cmd:     FileStream,
+		Message: fileContents,
+		From:    c.Username,
+	})
+	c.ChatHistory += fmt.Sprintf("You sent: {%s}\n", fileName)
 }
 
 //	Sends specific data to server
@@ -104,11 +120,17 @@ func (c *Client) switchAction(data *Data) {
 	case TextStream:
 		// text received by another user
 		fmt.Println(formatToConsole(data))
+		c.ChatHistory += fmt.Sprintf("%s: %s\n", data.From, data.Message)
+	case PrepareFile:
+		// When someone is about to send a file
+		fmt.Printf("%s: SENT %s \n", data.From, data.Message)
+		c.ChatHistory += fmt.Sprintf("%s: SENT {%s}\n", data.From, data.Message)
+		// Message should have the filename that's going to be received
+		c.fileName = data.Message
 	case FileStream:
 		// file sent by another user
-		fmt.Println("---FILE RECEIVED---")
-		fmt.Printf(">>> Written in path {%s}\n", DOWNLOAD_FILE_PATH)
-		writeMessageToFile(data)
+		fmt.Printf(">>> Downloaded in path {%s}\n", c.fileName)
+		c.writeMessageToFile(data)
 	default: // success is ignored
 	}
 }
@@ -129,9 +151,9 @@ func formatToConsole(data *Data) string {
 }
 
 // Writes given data's message to a file
-func writeMessageToFile(data *Data) {
+func (c *Client) writeMessageToFile(data *Data) {
 	// Write to file
-	err := ioutil.WriteFile(DOWNLOAD_FILE_PATH, []byte(data.Message), 0644)
+	err := ioutil.WriteFile(DOWNLOAD_FILE_PATH+c.fileName, []byte(data.Message), 0644)
 
 	if err != nil {
 		fmt.Println(err)

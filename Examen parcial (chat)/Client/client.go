@@ -23,14 +23,16 @@ func clientActions(client *ChatRoom.Client) {
 
 	isChatting := true
 
-	clear()
-	fmt.Println("[NOTE: Downloaded files are saved in current path]")
-	fmt.Println("+-------OPTIONS-------+")
-	fmt.Println(" a) Send message")
-	fmt.Println(" b) Send file")
-	fmt.Println(" c) Exit")
-
 	for isChatting {
+
+		clear()
+		fmt.Println("[NOTE: Downloaded files are saved in current path]")
+		fmt.Println("+-------OPTIONS-------+")
+		fmt.Println(" a) Send message")
+		fmt.Println(" b) Send file")
+		fmt.Println(" c) Exit")
+
+		fmt.Printf("\n+---CHAT---+\n%s\n", client.ChatHistory)
 
 		fmt.Println(">>>")
 		fmt.Scanln(&input)
@@ -40,10 +42,11 @@ func clientActions(client *ChatRoom.Client) {
 			// Send text message
 			client.SendMessage(readMessage())
 		case input == "b":
+			fileName := readMessage()
 			// Send file's text
-			contents, success := tryReadFile(readMessage())
+			contents, success := tryReadFile(fileName)
 			if success {
-				client.SendFile(contents)
+				client.SendFile(contents, fileName)
 			}
 		}
 		isChatting = input != "c"
