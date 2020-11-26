@@ -1,0 +1,80 @@
+
+body { 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    height: 100vh;
+
+    background: 
+        /* top, transparent black */ 
+        linear-gradient(
+            rgba(39, 39, 39, 0.45), 
+            rgba(0, 0, 0, 0.45)
+        ),
+        url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShfEkMRFYqubsoby1KJyp2KPqEhofGNRmnVw&usqp=CAU");
+    background-size: 
+        600% 600vh, 
+        400px 400px;
+    animation: background-anim 16s linear infinite;
+    animation-direction: alternate;
+}
+
+@keyframes background-anim {
+    0% {background-position: 0%}
+    100% {background-position: 100%}
+}
+
+body div.main-container {
+    display: grid;
+    width: 50%;
+    grid-template-columns: [border-l] 15px [center-content] auto [border-r] 15px [end];
+    grid-template-rows: [row1-start] 150px [row2-start] 250px;
+
+    background-color: rgb(246, 246, 246);
+    border-radius: 2px;
+    margin-left: 25%;
+}
+
+.main-container div.gcontent {
+    grid-column-start: center-content;
+    grid-column-end: border-r;
+
+    /*font-family: 'VT323', monospace;
+    font-family: 'Athiti', sans-serif;*/
+    font-family: 'Press Start 2P', cursive;
+}
+
+.main-container div#subject-container {
+    grid-row-start: row1-start;
+    grid-row-end: row2-start;
+    background-color: red;
+}
+
+.main-container div.input-container {
+    display: flex;
+    flex-direction: column;
+
+    padding: 10px 20px 10px 20px;
+}
+
+.main-container .input-container input {
+    height: 50px;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 5px;
+    border-color: black;
+    font-size: 25px;
+    font-family: 'VT323', monospace;
+}
+
+.main-container .input-container button {
+    height: 35px;
+    width: 100px;
+    font-size: 25px;
+    box-shadow: none;
+    border-style: none;
+    font-family: 'VT323', monospace;
+    background-image: url("https://lh3.googleusercontent.com/proxy/HGqI4E4gF3sTPDPT1zzrAsUOsKJqrwsDwsVeowxoFeZRxWozPgfbdsyjQO9a-cvEgrsaqgSEG8chS-7IK8Yd-T82cJjjaBYe");
+    background-size: 100px 35px;
+}
