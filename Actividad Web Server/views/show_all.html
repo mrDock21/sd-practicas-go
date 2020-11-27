@@ -1,0 +1,155 @@
+<!DOCTYPE HTML>
+
+<html>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>Student grades</title>
+
+        <!--  Fonts -->
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Athiti&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+        <!--  Styles  -->
+        <link rel="stylesheet" type="text/css" href="/styles/show_all.css">
+    </head>
+
+    <body>
+        <div class="main-container">
+            <div class="stitle gcontent">
+                <h2>Todas las materias</h2>
+            </div>
+            <div class="response-container gcontent" id="res-container">
+                <!--
+                    SUBJECTS ARE CONSTRUCTED LIKE THIS
+                    <div class="subject-view">
+                        <div class="subject-title">
+                            <h4>Subject name</h4>
+                        </div>
+                        <div class="student-view">
+                            <div class="student-name">
+                                <p>Student Name</p>
+                            </div>
+                            <div class="student-grade">
+                                <p>100.00</p>
+                            </div>
+                        </div>
+                    </div>
+                -->
+            </div>
+        </div>
+        <script>
+            // classes names
+            const SUBJECT_VIEW = "subject-view",
+                  SUBJECT_TITLE = "subject-title",
+                  STUDENT_VIEW = "student-view",
+                  STUDENT_NAME = "student-name",
+                  STUDENT_GRADE = "student-grade";
+
+            window.onload = function() {
+                sendRequest();
+            };
+            function sendRequest() {
+                http_request = false;
+
+                if (window.XMLHttpRequest) { // Mozilla, Safari,...
+                    http_request = new XMLHttpRequest();
+                    if (http_request.overrideMimeType) {
+                        http_request.overrideMimeType('text/xml');
+                    }
+                } 
+                else if (window.ActiveXObject) { // IE
+                    try {
+                        http_request = new ActiveXObject("Msxml2.XMLHTTP");
+                    } catch (e) {
+                        try {
+                            http_request = new ActiveXObject("Microsoft.XMLHTTP");
+                        } catch (e) {}
+                    }
+                }
+
+                if (!http_request) {
+                    alert('Falla :( No es posible crear una instancia XMLHTTP');
+                    return false;
+                }
+
+                http_request.onreadystatechange = function(){
+
+                    if (http_request.readyState == 4) {
+                        if (http_request.status == 200) {
+                            console.log("[DEBUG]    Receives...", http_request.responseText);
+                            try {
+                                var json = JSON.parse(http_request.responseText);
+                                console.log(json);
+
+                                populate(json);
+                            } catch (error) {
+                                console.error("[DEBUG]  Received text isn't JSON!");
+                            }
+                        }
+                    }
+                };
+                http_request.open('POST', "http://localhost:9000/show-all/get", true);
+                http_request.send();
+            }
+
+            function populate(jsonObj) {
+                var container = document.getElementById("res-container"),
+                    subject; 
+
+                for (subject in jsonObj) {
+                    // for each subject: set elements
+                    var sbj_view = createSubjectView(subject), 
+                        student;
+                    
+                    for (student in jsonObj[subject]) {
+                        var stdnt_view = 
+                            createStudentView(student, jsonObj[subject][student]);
+                        // append student
+                        sbj_view.appendChild(stdnt_view);
+                    }
+                    // append subject
+                    container.appendChild(sbj_view);
+                }
+            }
+
+            function createSubjectView(name) {
+                var sbj_view = document.createElement("div"),
+                    sbj_title = document.createElement("div"),
+                    sbj_h4 = document.createElement("h4");
+                // set content
+                sbj_h4.textContent = name;
+                // set classes
+                sbj_view.classList.add(SUBJECT_VIEW);
+                sbj_title.classList.add(SUBJECT_TITLE);
+                // bind
+                sbj_title.appendChild(sbj_h4);
+                sbj_view.appendChild(sbj_title);
+                return sbj_view;
+            }
+
+            function createStudentView(name, grade) {
+                var stdnt_view = document.createElement("div"),
+                    name_div = document.createElement("div"),
+                    grade_div = document.createElement("div"),
+                    name_p = document.createElement("p"),
+                    grade_p = document.createElement("p");
+                // set classes
+                stdnt_view.classList.add(STUDENT_VIEW);
+                name_div.classList.add(STUDENT_NAME);
+                grade_div.classList.add(STUDENT_GRADE);
+                // set content
+                name_p.textContent = name;
+                grade_p.textContent = grade.toString();
+                // bind
+                name_div.appendChild(name_p);
+                grade_div.appendChild(grade_p);
+                stdnt_view.appendChild(name_div);
+                stdnt_view.appendChild(grade_div);
+
+                return stdnt_view;
+            }
+        
+        </script>
+    </body>
+</html>

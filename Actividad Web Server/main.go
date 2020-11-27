@@ -11,6 +11,6 @@ func main() {
 	var s WebServer.Server
 
 	go s.Serve()
-
+	fmt.Println("[SERVER]	Running")
 	fmt.Scanln(&input)
 }
