@@ -17,28 +17,65 @@
     <body>
         <div class="main-container">
             <div id="subject-container" class="gcontent">
-                <div class="input-container">
+                <div class="input-section">
                     <div>
                         <h2>Agregar materia</h2>
                     </div>
                     <div>
-                        <form action="/add-grade" method="post">
-                            <input type="text" name="add-subject-input" id="">
+                        <form action="/add-subject" method="POST">
+                            <div class="input-text">
+                                <input type="text" name="subject-input" id="">
+                            </div>
+                            <div>
+                                <input class="submit-btn" type="submit" value="Guardar">
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
             <div id="student-container" class="gcontent">
-                <div class="input-container">
+                <div class="input-section">
                     <div>
                         <h2>Agregar calificación</h2>
                     </div>
                     <div>
-                        <form action="/add-grade" method="post">
-                            <input type="text" name="grade-input" id="">
-                            <button type="submit">Push me!</button>
+                        <form action="/add-grade" method="POST">
+                            <div class="input-text">
+                                <label for="">Materia</label>
+                                <input type="text" name="subject-input2" id="">
+                            </div>
+                            <div class="input-text">
+                                <label for="">Estudiante</label>
+                                <input type="text" name="student-input" id="">
+                            </div>
+                            <div class="input-text">
+                                <label for="">Calificación</label>
+                                <input type="text" name="grade-input" id="">
+                            </div>
+                            <div id="submit-student">
+                                <input class="submit-btn" type="submit" value="Registrar">
+                            </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="btns-container">
+            <div class="gbtns-content">
+                <div>
+                    <form action="/student-grade" method="GET">
+                        <input type="submit" value="Promedio Alumno">
+                    </form>
+                </div>
+                <div>
+                    <form action="/subject-grade" method="GET">
+                        <input type="submit" value="Promedio Materia">
+                    </form>
+                </div>
+                <div>
+                    <form action="/general-grade" method="GET">
+                        <input type="submit" value="Promedio General">
+                    </form>
                 </div>
             </div>
         </div>
