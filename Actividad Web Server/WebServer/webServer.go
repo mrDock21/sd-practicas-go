@@ -44,6 +44,8 @@ func (s *Server) buildRoutes() {
 	http.HandleFunc("/", s.root)
 	http.HandleFunc("/add-subject", s.addSubject)
 	http.HandleFunc("/add-grade", s.addStudent)
+	http.HandleFunc("/subject-grade", s.getSubjectGrade)
+	http.HandleFunc("/subject-grade/compute", s.subjectGrade)
 	//	to be able to retrieve css files
 	staticHandler := http.FileServer(http.Dir("./views/styles"))
 	http.Handle("/styles/", http.StripPrefix("/styles/", staticHandler))
@@ -92,18 +94,30 @@ func (s *Server) addStudent(res http.ResponseWriter, req *http.Request) {
 	respondWith(&res, HtmlRes, readFile(VIEWS_PATH+"success.html"))
 }
 
+func (s *Server) getSubjectGrade(res http.ResponseWriter, req *http.Request) {
+	respondWith(&res, HtmlRes, readFile(VIEWS_PATH+"subject_grade.html"))
+}
+
 func (s *Server) subjectGrade(res http.ResponseWriter, req *http.Request) {
 	// only allow POST method
+	req.ParseMultipartForm(500)
 	if checkValidRequest(&res, req, "POST") == false {
 		// not valid
 		respondWith(&res, JsonRes, FAILURE_JSON)
 		return
 	}
+	fmt.Println("[DEBUG]	Receives")
+	for key, values := range req.PostForm {
+		fmt.Println("	" + key + "=")
+		fmt.Println(values)
+	}
 	subject := req.FormValue("subject-input")
 	grade := 0.0
+	fmt.Println("[DEBUG]	Computes Grade of=" + subject)
+	fmt.Println(s.mySubjects)
 	_studens, ok := s.mySubjects.Grades[subject]
 	// check subject's existence
-	if !ok {
+	if !ok || len(_studens) == 0 {
 		respondWith(&res, JsonRes, FAILURE_JSON+"{\"msg\":\"Subject doesn't exist!\"}")
 		return
 	}
@@ -111,7 +125,7 @@ func (s *Server) subjectGrade(res http.ResponseWriter, req *http.Request) {
 	for _, studentGrade := range _studens {
 		grade += studentGrade
 	}
-	respondWith(&res, JsonRes, fmt.Sprintf("{\"Status\": 1,\"Data\":%.2f}", grade))
+	respondWith(&res, JsonRes, fmt.Sprintf("{\"Status\": 1,\"Data\":%.2f}", grade/float64(len(_studens))))
 }
 
 //	Validates request's form and desired METHOD
